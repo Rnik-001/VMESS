@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>VMESS配置转换器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            width: 100%;
+            height: 80px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            background: rgba(255, 255, 255, 0.15);
+            position: relative;
+        }
+
+        .title {
+            flex: 1;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .tg-button {
+            background: linear-gradient(45deg, #0088cc, #00a2ff);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            box-shadow: 0 4px 10px rgba(0, 136, 204, 0.3);
+        }
+
+        .tg-button:hover {
+            background: linear-gradient(45deg, #0077b5, #0088cc);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 136, 204, 0.4);
+        }
+
+        .main-content {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .description {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .config-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            padding: 18px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: none;
+            min-height: 150px;
+            transition: all 0.3s;
+        }
+
+        .config-input:focus {
+            outline: none;
+            border-color: rgba(74, 144, 226, 0.5);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        .convert-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(45deg, #4a90e2, #5aa7ec);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px 0;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .convert-btn:hover {
+            background: linear-gradient(45deg, #3b82f6, #4a90e2);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(74, 144, 226, 0.4);
+        }
+
+        .result-container {
+            margin-top: 20px;
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .result-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .extracted-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .info-item {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-label {
+            font-weight: 600;
+            min-width: 120px;
+            color: #4a90e2;
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        .vmess-link-container {
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .vmess-link {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 18px;
+            word-break: break-all;
+            font-size: 14px;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            font-family: monospace;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            background: linear-gradient(45deg, #ff9800, #ffb74d);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            padding: 14px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .copy-btn:hover {
+            background: linear-gradient(45deg, #f57c00, #ff9800);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .error {
+            color: #ff6b6b;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 10px;
+            display: none;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .example {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #4a90e2;
+            font-size: 16px;
+        }
+
+        .example-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-family: monospace;
+            line-height: 1.5;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">VMESS协议提取</div>
+            <a href="https://t.me/iOSAWJ" class="tg-button" target="_blank">
+                <i class="fab fa-telegram"></i> TG频道
+            </a>
+        </div>
+        
+        <div class="main-content">
+            <p class="description">将各种格式的VMESS配置转换为标准的VMESS链接</p>
+            
+            <div class="input-section">
+                <div class="section-title">输入配置字符串:</div>
+                <textarea class="config-input" id="config-input" placeholder="粘贴您的VMESS配置字符串..."></textarea>
+            </div>
+            
+            <button class="convert-btn" id="convert-btn">
+                <i class="fas fa-sync-alt"></i> 转换配置
+            </button>
+            
+         <button class="copy-btn" id="copy-btn">
+                        <i class="fas fa-copy"></i> 复制链接
+                    </button>
+
+           <div class="error" id="error-message"></div>
+            
+            <div class="result-container" id="result-container">
+                <h2 class="result-title">转换结果</h2>
+                
+                <div class="extracted-info">
+                    <div class="result-title">提取的配置信息</div>
+                    <div id="extracted-info"></div>
+                </div>
+                
+                <div class="vmess-link-container">
+                    <div class="result-title">VMESS链接</div>
+                    <div class="vmess-link" id="vmess-link"></div>
+           
+                </div>
+            </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const convertBtn = document.getElementById('convert-btn');
+            const configInput = document.getElementById('config-input');
+            const resultContainer = document.getElementById('result-container');
+            const extractedInfo = document.getElementById('extracted-info');
+            const vmessLink = document.getElementById('vmess-link');
+            const copyBtn = document.getElementById('copy-btn');
+            const errorMessage = document.getElementById('error-message');
+            
+            convertBtn.addEventListener('click', convertConfig);
+            copyBtn.addEventListener('click', copyVmessLink);
+            
+            function convertConfig() {
+                // 隐藏错误信息
+                errorMessage.style.display = 'none';
+                
+                const configStr = configInput.value.trim();
+                
+                if (!configStr) {
+                    showError('请输入配置字符串');
+                    return;
+                }
+                
+                try {
+                    // 提取配置信息
+                    const configInfo = extractVmessInfo(configStr);
+                    
+                    // 显示提取的配置信息
+                    displayExtractedInfo(configInfo);
+                    
+                    // 检查必要字段
+                    if (!configInfo.uuid) {
+                        showError('未找到UUID');
+                        return;
+                    }
+                    
+                    if (!configInfo.address) {
+                        showError('未找到服务器地址');
+                        return;
+                    }
+                    
+                    // 创建vmess链接
+                    const vmessUrl = createVmessLink(configInfo);
+                    
+                    // 显示结果
+                    vmessLink.textContent = vmessUrl;
+                    resultContainer.style.display = 'block';
+                    
+                } catch (error) {
+                    showError('转换过程中发生错误: ' + error.message);
+                }
+            }
+            
+            function extractVmessInfo(configStr) {
+                const info = {};
+                
+                // 提取UUID
+                const uuidPattern = /"uuid"\s*:\s*"([a-f0-9-]+)"/i;
+                const uuidMatch = configStr.match(uuidPattern);
+                if (uuidMatch) {
+                    info.uuid = uuidMatch[1];
+                }
+                
+                // 提取地址
+                const addressPatterns = [
+                    /"address"\s*:\s*"([^"]+)"/i,
+                    /"server"\s*:\s*"([^"]+)"/i,
+                    /"host"\s*:\s*"([^"]+)"/i
+                ];
+                
+                for (const pattern of addressPatterns) {
+                    const match = configStr.match(pattern);
+                    if (match) {
+                        info.address = match[1];
+                        break;
+                    }
+                }
+                
+                // 提取端口
+                const portPattern = /"port"\s*:\s*(\d+)/;
+                const portMatch = configStr.match(portPattern);
+                if (portMatch) {
+                    info.port = portMatch[1];
+                }
+                
+                // 提取路径（去掉多余的转义字符）
+                const pathPattern = /"path"\s*:\s*"([^"]*)"/;
+                const pathMatch = configStr.match(pathPattern);
+                if (pathMatch) {
+                    let path = pathMatch[1];
+                    // 去掉多余的转义字符
+                    info.path = path.replace(/\\\//g, '/');
+                }
+                
+                // 提取host
+                const hostPattern = /"host"\s*:\s*"([^"]+)"/;
+                const hostMatch = configStr.match(hostPattern);
+                if (hostMatch) {
+                    info.host = hostMatch[1];
+                }
+                
+                return info;
+            }
+            
+            function createVmessLink(configInfo) {
+                // 构建标准vmess配置
+                const vmessConfig = {
+                    "v": "2",
+                    "ps": "HongKong",  // 节点名称
+                    "add": configInfo.address || '',
+                    "port": configInfo.port || '443',
+                    "id": configInfo.uuid || '',
+                    "aid": "0",
+                    "scy": "auto",
+                    "net": configInfo.path ? "ws" : "tcp",
+                    "type": "none",
+                    "host": configInfo.host || configInfo.address || '',
+                    "path": configInfo.path || '/',
+                    "tls": "tls",
+                    "sni": ""
+                };
+                
+                // 转换为JSON并编码
+                const configJson = JSON.stringify(vmessConfig);
+                const encodedConfig = btoa(configJson);
+                
+                return `vmess://${encodedConfig}`;
+            }
+            
+            function displayExtractedInfo(configInfo) {
+                let html = '';
+                
+                for (const [key, value] of Object.entries(configInfo)) {
+                    html += `
+                        <div class="info-item">
+                            <div class="info-label">${key}:</div>
+                            <div class="info-value">${value}</div>
+                        </div>
+                    `;
+                }
+                
+                extractedInfo.innerHTML = html;
+            }
+            
+            function copyVmessLink() {
+                const text = vmessLink.textContent;
+                
+                navigator.clipboard.writeText(text).then(() => {
+                    // 临时改变按钮文本
+                    const originalText = copyBtn.textContent;
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制!';
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制链接';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('复制失败: ', err);
+                    alert('复制失败，请手动复制链接');
+                });
+            }
+            
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                resultContainer.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
